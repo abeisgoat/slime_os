@@ -6,8 +6,9 @@ Replace the contents of your PicoVision Micropython filesystem with the files in
 
 This software is experimental and does not work completely, specifically issues include...
 
-* Input is only supported via an i2c keyboard, which is not documented
-* Some apps use `display.*` methods directly instead of `sos.graphics.*` so they do not support flipping the display
+* Input is only supported via an i2c keyboard, which is not documented (hoping to add USB keyboard soon)
+* Some apps are upside down due to the Slimedeck having the screen rotated 180 degrees. Newer apps use the `sos.graphics.*` methods which support the `display/flipped` value in `config.py`. Older apps use `self.display.*` which needs replacing.`
+* Everything is generally incomplete
 
 ## Hardware
 
