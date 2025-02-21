@@ -28,6 +28,7 @@ import slime_os as sos
 | [sos.gfx](/src/slime_os/graphics.py)  | Drawing methods including shapes, text, and other utilities.  |
 | [sos.intents](/src/slime_os/intents.py)  | Intents are used to send signals from an app to the OS, including quitting the app, swapping apps, or flipping the frame buffer.  |
 | [sos.ctrl](/src/slime_os/expansion.py)  | Controller for identifying expansions. |
+| [sos.kbd](/src/slime_os/keyboard_i2c.py)  | Keyboard instance for reading buttons. |
 
 ### Issues
 

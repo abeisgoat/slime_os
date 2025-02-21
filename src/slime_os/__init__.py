@@ -6,10 +6,13 @@ import gc
 import os
 import sdcard
 
-import slime_os.i2c_keyboard as i2c_keyboard
+import slime_os.i2c_keyboard
 import slime_os.launcher
+
 import slime_os.graphics import *
 from slime_os.expansion import *
+
+import slime_os.intents as intents
 from slime_os.intents import *
 
 from slime_os.keycode import Keycode as keycode
@@ -84,7 +87,7 @@ ctrl = Ctrl(display)
 kbd = None
 
 if config["input"]["keyboard"] == "i2c":
-    kbd = i2c_keyboard.Keyboard(get_internal_i2c())
+    kbd = slime_os.i2c_keyboard.Keyboard(get_internal_i2c())
 
 sd = get_sdcard()
 persist = {}
