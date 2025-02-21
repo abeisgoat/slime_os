@@ -1,8 +1,10 @@
 # slime_os
 
-Slime OS is an app launcher for the PicoVision (and soon other RP2040 and RP2350 devices). It was originally designed for the [Slimedeck Zero](https://youtu.be/rnwPmoWMGqk), a mini cyberdeck project. However I hope to expand it to other devices and form factors.
+Slime OS is an app launcher for the [PicoVision](https://collabs.shop/fca3j3) (and soon other RP2040 and RP2350 devices). It was originally designed for the [Slimedeck Zero](https://youtu.be/rnwPmoWMGqk), a mini cyberdeck project. However I hope to expand it to other devices and form factors.
 
 ![Slime OS launcher and i2c Scan app](/screenshot.gif)
+
+*This README contains affiliate links which help support this project!*
 
 ## Software
 
