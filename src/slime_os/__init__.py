@@ -1,157 +1,23 @@
+from picovision import PicoVision, PEN_P5
+from machine import Pin, I2C, UART, SPI
+
 import time
 import gc
 import os
-from machine import Pin, I2C, UART, SPI
 import sdcard
 
-import slime_os.i2c_keyboard as i2c_keyboard
+import slime_os.i2c_keyboard
 import slime_os.launcher
+
+from slime_os.graphics import *
+from slime_os.expansion import *
+
+import slime_os.intents as intents
+from slime_os.intents import *
+
 from slime_os.keycode import Keycode as keycode
 
-from picovision import PicoVision, PEN_P5
-from config import config
-
-'''
-Intents
--- Intents are used by apps to send signals back to Slime OS for things like
--- closing the app, flipping the render buffer, and swapping apps
-'''
-INTENT_KILL_APP=[-1]
-
-def INTENT_REPLACE_APP(next_app):
-    return [INTENT_KILL_APP[0], next_app]
-
-INTENT_NO_OP=[0]
-INTENT_FLIP_BUFFER=[1]
-
-def is_intent(a, b):
-    if len(a) == 0 or len(b) == 0:
-        return False
-    
-    return a[0] == b[0]
-
-'''
-Expnasions
--- Related to the expansion port
-'''
-
-CTRL_EMPTY=-1
-
-CTRL_UART_9600=0
-CTRL_UART_STANDARD=CTRL_UART_9600
-
-CTRL_UART_115200=1
-CTRL_UART_FAST= CTRL_UART_115200
-
-CTRL_I2C_STANDARD=10
-CTRL_I2C_FAST=11
-
-CTRL_NAMES={
-   CTRL_EMPTY: "(Empty)",
-   CTRL_UART_9600: "UART (9600)",
-   CTRL_UART_115200: "UART (115200)",
-   CTRL_I2C_STANDARD: "I2C (Standard)",
-   CTRL_I2C_FAST: "I2C (Fast)",
-}
-
-    
-class ExpansionCtrl:
-    last_poll=0
-    last_ctrl=CTRL_EMPTY
-    
-    def __init__(self, display):
-        self.display = display
-    
-    def get(self, debug=False):
-        voltage = self.display.get_gpu_io_adc_voltage(29)
-        
-        if debug:
-            print(f"The voltage on pin 29 is {voltage:.02f}V")
-        
-        if 2.3 <= voltage <= 2.6:
-            return CTRL_UART_115200
-        else:
-            return CTRL_EMPTY
-    
-    def check(self):
-        tick = time.ticks_ms()
-        
-        if (tick-self.last_poll) < 1000:
-            return False
-        
-        self.last_poll = tick
-            
-        ctrl = self.get()
-        
-        if self.last_ctrl != ctrl:
-            self.last_ctrl = ctrl
-            return True
-        else:
-            return False
-        
-class Graphics:
-    def __init__(self, display):
-        self.display = display
-        self.dw, self.dh = display.get_bounds()
-
-        self.is_flipped = config["display"]["flipped"]
-    
-    def set_pen(self, *args, **kwargs):
-        self.display.set_pen(*args, **kwargs)
-        
-    def _adjust_x(self, x, w=0):
-        if self.is_flipped:
-            return self.dw - w - x
-        else:
-            return x
-        
-    def _adjust_y(self, y, h=0):
-        if self.is_flipped:
-            return self.dh - h - y
-        else:
-            return y
-        
-    def rectangle(self, *args):
-        x,y,w,h = args
-        x = self._adjust_x(x, w)
-        y = self._adjust_y(y, h)
-        self.display.rectangle(x,y,w,h)
-        
-    def pixel(self, *args):
-        x,y = args
-        x = self._adjust_x(x)
-        y = self._adjust_y(y)
-        self.display.pixel(x,y)
-        
-    def line(self, *args, **kwargs):
-        x1,y1,x2,y2 = args[0:4]
-        x1 = self._adjust_x(x1)
-        y1 = self._adjust_y(y1)
-        x2 = self._adjust_x(x2)
-        y2 = self._adjust_y(y2)
-        t = args[4] if len(args) == 5 else 1
-        self.display.line(x1,y1,x2,y2,t, **kwargs)
-        
-    def text(self, *args, **kwargs):
-        text, x,y = args
-        x = self._adjust_x(x)
-        y = self._adjust_y(y)
-        
-        angle = 0
-        scale = kwargs["scale"] if "scale" in kwargs else 1
-        if self.is_flipped:
-            angle = 180
-            x -= scale
-            y -= 0
-        self.display.text(text, x,y, scale=scale, angle=angle)
-    
-    def measure_text(self, *args, **kwargs):
-        return self.display.measure_text(*args, **kwargs)
-    
-    def update(self):
-        return self.display.update()
-        
-
+TMP_DOWNLOAD_PLAY_APP = "/sd/download_play_app.py"
 
 def get_internal_i2c():
     return I2C(1, scl=Pin(7), sda=Pin(6))
@@ -159,16 +25,19 @@ def get_internal_i2c():
 def get_expansion_i2c():
     return I2C(1, scl=Pin(1), sda=Pin(0))
 
-def get_expansion_uart():
-    return UART(0, baudrate=115200, tx=Pin(0), rx=Pin(1))
+def get_expansion_uart(baudrate=115200):
+    return UART(0, baudrate, tx=Pin(0), rx=Pin(1))
     
+def get_sdcard():
+    sd_spi = SPI(1, sck=Pin(10, Pin.OUT), mosi=Pin(11, Pin.OUT), miso=Pin(12, Pin.OUT))
+    return sdcard.SDCard(sd_spi, Pin(15))
 
 def get_applications() -> list[dict[str, str, str]]:
     applications = []
     global app
     
     app_files = os.listdir()
-    download_play_app = "/sd/download_play_app.py"
+    download_play_app = TMP_DOWNLOAD_PLAY_APP
     
     for file in app_files:
         if file.endswith("app.py"):
@@ -213,16 +82,18 @@ def get_applications() -> list[dict[str, str, str]]:
 
 
 display = PicoVision(PEN_P5, 400, 240)
-gfx = Graphics(display)
-ctrl = ExpansionCtrl(display)
-kbd = i2c_keyboard.Keyboard(get_internal_i2c())
+gfx = Gfx(display)
+ctrl = Ctrl(display)
+kbd = None
 
-sd_spi = SPI(1, sck=Pin(10, Pin.OUT), mosi=Pin(11, Pin.OUT), miso=Pin(12, Pin.OUT))
-sd = sdcard.SDCard(sd_spi, Pin(15))
+if config["input"]["keyboard"] == "i2c":
+    kbd = slime_os.i2c_keyboard.Keyboard(get_internal_i2c())
+
+sd = get_sdcard()
 persist = {}
 os.mount(sd, "/sd")
 try:
-    os.remove("/sd/download_play_app.py")
+    os.remove(TMP_DOWNLOAD_PLAY_APP)
     print("[sos].temp_file_removed")
 except:
     print("[sos].temp_file_missing")
@@ -232,8 +103,6 @@ def boot(next_app):
     for key,color in config["theme"].items():
         if isinstance(color, tuple):
             config["theme"][key] = display.create_pen(*color)
-        #else:
-         #   config["theme"][key] = config["theme"][color]
             
     running_app = next_app()
     running_app_instance = None

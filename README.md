@@ -2,6 +2,8 @@
 
 Slime OS is an app launcher for the PicoVision. It was originally designed for the [Slimedeck Zero](https://youtu.be/rnwPmoWMGqk), a mini cyberdeck project. However I hope to expand it to other devices and form factors.
 
+![Slime OS launcher and i2c Scan app](/screenshot.gif)
+
 ## Software
 
 Slime OS runs in a limited 32-color mode with a 400x240 internal resolution which is interlaced up to 800x480. This resolution should scale well on most HDMI displays.
@@ -10,6 +12,25 @@ Slime OS runs in a limited 32-color mode with a 400x240 internal resolution whic
 
 1. Flash the [widescreen build](https://github.com/pimoroni/picovision/releases) of the PicoVision firmware to your PicoVision CPU.
 2. Use [Thonny](https://thonny.org/) to replace the contents of your PicoVision Micropython filesystem with the files in `src`. 
+
+### Making apps
+
+Please refer to an [example app](/src/flashlight_app.py) for boiler plate.
+
+Slime OS includes various libraries which are used internally but may also be helpful when making apps.
+
+Begin by importing slime_os...
+
+```python
+import slime_os as sos
+```
+
+| Slime OS Library  | Description | 
+| ------------- | ------------- |
+| [sos.gfx](/src/slime_os/graphics.py)  | Drawing methods including shapes, text, and other utilities.  |
+| [sos.intents](/src/slime_os/intents.py)  | Intents are used to send signals from an app to the OS, including quitting the app, swapping apps, or flipping the frame buffer.  |
+| [sos.ctrl](/src/slime_os/expansion.py)  | Controller for identifying expansions. |
+| [sos.kbd](/src/slime_os/keyboard_i2c.py)  | Keyboard instance for reading buttons. |
 
 ### Issues
 
