@@ -93,7 +93,7 @@ def gfx_download_modal(gfx, ctrl_name, percent, success):
             gfx.set_pen(sos.config["theme"]["white"])
             status = "App installed."
             gfx.text(status, cx+padding+padding, gy+5)
-
+    
 
 class App:
     def setup(self, display):
@@ -102,7 +102,8 @@ class App:
         self.do_get_apps()
         if not "launcher" in sos.persist:
             sos.persist["launcher"] = {
-                "selected_app": 0
+                "selected_app": 0,
+                "welcome": False
                 }
 
         display.set_gpu_io_adc_enable(29, True)
@@ -253,6 +254,9 @@ class App:
                         break
                     
             f.close()
+    def do_welcome(self, cursor=0):
+        if not sos.persist["launcher"]["welcome"]:
+            sos.gfx_alert_modal(sos.gfx, "Welcome to Slime OS", "[MESSAGE]", "Stay awhile, tinker, hack, have fun!", cursor)
             
     def run(self):
         last_selected_app = -1
@@ -298,6 +302,7 @@ class App:
             
             if last_selected_app != sos.persist["launcher"]["selected_app"]:
                 self.do_menu()
+                self.do_welcome()
                 yield sos.INTENT_FLIP_BUFFER
                 last_selected_app = sos.persist["launcher"]["selected_app"]
                 
@@ -312,10 +317,25 @@ class App:
             if keys[sos.keycode.RIGHT_ARROW]:
                 sos.persist["launcher"]["selected_app"] += 1
             if keys[sos.keycode.ENTER]:
-                yield sos.INTENT_REPLACE_APP(
-                    self.apps[sos.persist["launcher"]["selected_app"]]
-                    )
-                break
+                if not sos.persist["launcher"]["welcome"]:
+                    self.do_menu()
+                    self.do_welcome(1)
+                    yield sos.INTENT_FLIP_BUFFER
+                    time.sleep(0.01)
+                    self.do_menu()
+                    self.do_welcome(0)
+                    yield sos.INTENT_FLIP_BUFFER
+                    time.sleep(0.01)
+                    self.do_menu()
+                    self.do_welcome(1)
+                    sos.persist["launcher"]["welcome"] = True
+                    self.do_menu()
+                    yield sos.INTENT_FLIP_BUFFER
+                else:
+                    yield sos.INTENT_REPLACE_APP(
+                        self.apps[sos.persist["launcher"]["selected_app"]]
+                        )
+                    break
             
             yield sos.INTENT_NO_OP
             
