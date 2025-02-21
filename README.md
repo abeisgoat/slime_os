@@ -11,6 +11,24 @@ Slime OS runs in a limited 32-color mode with a 400x240 internal resolution whic
 1. Flash the [widescreen build](https://github.com/pimoroni/picovision/releases) of the PicoVision firmware to your PicoVision CPU.
 2. Use [Thonny](https://thonny.org/) to replace the contents of your PicoVision Micropython filesystem with the files in `src`. 
 
+### Making apps
+
+Please refer to an [example app](/src/slime_os/flashlight_app.py) for boiler plate.
+
+Slime OS includes various libraries which are used internally but may also be helpful when making apps.
+
+Begin by importing slime_os...
+
+```python
+import slime_os as sos
+```
+
+| Slime OS Library  | Description | 
+| ------------- | ------------- |
+| [sos.gfx](/src/slime_os/graphics.py)  | Drawing methods including shapes, text, and other utilities.  |
+| [sos.intents](/src/slime_os/intents.py)  | Intents are used to send signals from an app to the OS, including quitting the app, swapping apps, or flipping the frame buffer.  |
+| [sos.ctrl](/src/slime_os/expansion.py)  | Controller for identifying expansions. |
+
 ### Issues
 
 This software is experimental and does not work completely, specifically issues include...
