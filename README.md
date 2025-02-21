@@ -13,7 +13,7 @@ Slime OS runs in a limited 32-color mode with a 400x240 internal resolution whic
 
 ### Making apps
 
-Please refer to an [example app](/src/slime_os/flashlight_app.py) for boiler plate.
+Please refer to an [example app](/src/flashlight_app.py) for boiler plate.
 
 Slime OS includes various libraries which are used internally but may also be helpful when making apps.
 
