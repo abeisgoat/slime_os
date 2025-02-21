@@ -2,6 +2,8 @@
 
 Slime OS is an app launcher for the PicoVision. It was originally designed for the [Slimedeck Zero](https://youtu.be/rnwPmoWMGqk), a mini cyberdeck project. However I hope to expand it to other devices and form factors.
 
+![Slime OS launcher and i2c Scan app](/screenshot.gif)
+
 ## Software
 
 Slime OS runs in a limited 32-color mode with a 400x240 internal resolution which is interlaced up to 800x480. This resolution should scale well on most HDMI displays.
