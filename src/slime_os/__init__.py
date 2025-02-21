@@ -80,6 +80,83 @@ def get_applications() -> list[dict[str, str, str]]:
 
     return sorted(applications, key=lambda x: x["name"])
 
+def gfx_confirm_modal(gfx, cursor):
+        mw = 199
+        mh = 54
+        cx = (gfx.dw-mw)//2
+        cy = int((gfx.dh-mh)/2.5)
+        padding = 6
+        
+        gfx.set_pen(config["theme"]["black"])
+        gfx.rectangle(cx+padding, cy+padding, mw, mh)
+        gfx.set_pen(config["theme"]["white"])
+        gfx.rectangle(cx, cy, mw, mh)
+        gfx.set_pen(config["theme"]["black"])
+        gfx.text("Quit app?", cx+padding, cy+7, scale=1)
+        gfx.line(cx+3, cy+18, cx+mw-3, cy+18)
+        
+        ctrl_name = "CONFIRM"
+        gfx.set_pen(config["theme"]["grey"])
+        ctrl_name_width = gfx.measure_text(ctrl_name, scale=1)
+        gfx.text(ctrl_name, cx+mw-padding-ctrl_name_width, cy+7, scale=1)
+        
+        status = "Are you sure you wish to exit?"
+        gfx.text(status, cx+padding, cy+24)
+            
+        gh = 14
+        gy = cy+35
+        gw = int((mw-padding*3)/2)
+        
+        gfx.set_pen(config["theme"]["grey"])
+        if cursor == 0:
+            gfx.set_pen(config["theme"]["green"])
+        gfx.rectangle(cx+padding, gy, gw, gh)
+        
+        gfx.set_pen(config["theme"]["grey"])
+        if cursor == 1:
+            gfx.set_pen(config["theme"]["green"])
+        gfx.rectangle(cx+padding+gw + padding, gy, gw, gh)
+        
+            
+        
+        gfx.set_pen(config["theme"]["black"])
+        bpadding = 5
+        gfx.text("NO", cx+padding+bpadding, gy+bpadding)
+        gfx.text("YES", cx+padding+gw + padding+bpadding, gy+bpadding)
+        
+def gfx_alert_modal(gfx, title, subtitle, text, cursor):
+        mw = 199
+        mh = 54
+        cx = (gfx.dw-mw)//2
+        cy = int((gfx.dh-mh)/2.5)
+        padding = 6
+        
+        gfx.set_pen(config["theme"]["black"])
+        gfx.rectangle(cx+padding, cy+padding, mw, mh)
+        gfx.set_pen(config["theme"]["white"])
+        gfx.rectangle(cx, cy, mw, mh)
+        gfx.set_pen(config["theme"]["black"])
+        gfx.text(title, cx+padding, cy+7, scale=1)
+        gfx.line(cx+3, cy+18, cx+mw-3, cy+18)
+        
+        gfx.set_pen(config["theme"]["grey"])
+        subtitle_width = gfx.measure_text(subtitle, scale=1)
+        gfx.text(subtitle, cx+mw-padding-subtitle_width, cy+7, scale=1)
+        
+        gfx.text(text, cx+padding, cy+24)
+            
+        gh = 14
+        gy = cy+35
+        gw = int((mw-padding*3)/2)
+        
+        gfx.set_pen(config["theme"]["grey"])
+        if cursor == 1:
+            gfx.set_pen(config["theme"]["green"])
+        gfx.rectangle(cx+padding+gw + padding, gy, gw, gh)
+        
+        gfx.set_pen(config["theme"]["black"])
+        bpadding = 5
+        gfx.text("OKAY", cx+padding+gw + padding+bpadding, gy+bpadding)
 
 display = PicoVision(PEN_P5, 400, 240)
 gfx = Gfx(display)
@@ -106,8 +183,9 @@ def boot(next_app):
             
     running_app = next_app()
     running_app_instance = None
-
     while True:
+        intent = None
+        
         if running_app:
             if not running_app_instance:
                 running_app.setup(display)
@@ -115,6 +193,41 @@ def boot(next_app):
             intent = next(running_app_instance)
         else:
             intent = INTENT_FLIP_BUFFER
+            
+        # Code to show confirmation on quit, needs some thinking on...
+        '''
+        keys = kbd.get_keys([
+            keycode.Q
+        ])
+        
+        if keys[keycode.Q]:
+            print("os quit")
+            c = 0
+                
+            while True:
+                
+                keys = kbd.get_keys([
+                    keycode.ENTER,
+                    keycode.LEFT_ARROW,
+                    keycode.RIGHT_ARROW,
+                ])
+                
+                if keys[keycode.LEFT_ARROW]:
+                    c = 0
+                if keys[keycode.RIGHT_ARROW]:
+                    c = 1
+                    
+                if keys[keycode.ENTER]:
+                    if c == 1:
+                        print("KILL!")
+                        running_app = None
+                        intent = INTENT_KILL_APP
+                    else:
+                        intent = INTENT_FLIP_BUFFER
+                    break
+                else:
+                    gfx_quit_modal(gfx, c)
+                    display.update()'''
             
         if is_intent(intent, INTENT_KILL_APP):
             running_app = None
@@ -130,7 +243,6 @@ def boot(next_app):
         if is_intent(intent, INTENT_NO_OP):
             pass
         
-        
         if is_intent(intent, INTENT_FLIP_BUFFER):
             display.set_pen(config["theme"]["black"])
             display.rectangle(0, 0, gfx.dw, 40)
@@ -142,6 +254,7 @@ def boot(next_app):
             
             display.text(window_title, gfx.dw-12-10, 31, -1, 1, 180)
             display.text(free(), 0+12+86, 31, -1, 1, 180)
+            
             display.update()
 
 def prepare_for_launch() -> None:
