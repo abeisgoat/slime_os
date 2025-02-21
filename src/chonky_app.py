@@ -16,10 +16,10 @@ class App:
         display.rectangle(0, 0, w, h)
 
         # Open the JPEG file
-        j.open_file("thumbnail_bw.jpg")
+        j.open_file("chonky_bw.jpg")
 
         # Decode the JPEG, 50
-        j.decode(39, 50, jpegdec.JPEG_SCALE_FULL)
+        j.decode(39, 10, jpegdec.JPEG_SCALE_FULL)
 
     def run(self):
         yield sos.INTENT_FLIP_BUFFER

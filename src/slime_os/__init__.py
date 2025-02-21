@@ -9,7 +9,7 @@ import sdcard
 import slime_os.i2c_keyboard
 import slime_os.launcher
 
-import slime_os.graphics import *
+from slime_os.graphics import *
 from slime_os.expansion import *
 
 import slime_os.intents as intents
