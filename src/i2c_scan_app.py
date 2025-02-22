@@ -130,8 +130,9 @@ class App:
                 if keys[sos.keycode.UP_ARROW]:
                     self.cursor["y"] -= 1
                     break
-                
-                yield sos.INTENT_NO_OP
+                    
+                if keys[sos.keycode.Q]:
+                    yield sos.INTENT_KILL_APP
                 
   
         
