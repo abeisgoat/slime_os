@@ -28,9 +28,9 @@ def gfx_expansion_modal(gfx, ctrl_name, attempts, success):
         ctrl_name_width = gfx.measure_text(ctrl_name, scale=1)
         gfx.text(ctrl_name, cx+mw-padding-ctrl_name_width, cy+7, scale=1)
         
-        status = "Attemping to handshake..."
+        status = "attempting to handshake..."
         if success == False:
-            status = "Hankshake failure."
+            status = "Handshake failure."
         if success == True:
             status = "Handshake success."
         gfx.text(status, cx+padding, cy+24)
@@ -77,7 +77,7 @@ def gfx_download_modal(gfx, ctrl_name, percent, success):
         ctrl_name_width = gfx.measure_text(ctrl_name, scale=1)
         gfx.text(ctrl_name, cx+mw-padding-ctrl_name_width, cy+7, scale=1)
         
-        status = "Attemping to sync app"
+        status = "attempting to sync app"
         gfx.text(status, cx+padding, cy+24)
         
         gfx.set_pen(sos.config["theme"]["yellow"])
